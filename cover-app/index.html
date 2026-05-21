@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cover Page Designer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    <div class="bg-glow glow-left"></div>
+    <div class="bg-glow glow-right"></div>
+
+    <div class="container">
+        <h1>COVER PAGE DESIGNER</h1>
+        
+        <div class="input-grid">
+            <div class="input-group full-line">
+                <label>Experiment Title</label>
+                <textarea id="title" rows="2" placeholder="EXPERIMENT NAME"></textarea>
+            </div>
+            
+            <div class="input-group full-line">
+                <label>Student Name</label>
+                <input type="text" id="name" placeholder="STUDENT NAME">
+            </div>
+            
+            <div class="input-group half-line">
+                <label>Registration No.</label>
+                <input type="text" id="regno" placeholder="E NUMBER">
+            </div>
+            <div class="input-group half-line">
+                <label>Group</label>
+                <input type="text" id="group" placeholder="GROUP NO">
+            </div>
+            
+            <div class="input-group half-line">
+                <label>Semester</label>
+                <input type="text" id="semester" placeholder="SEMESTER">
+            </div>
+            <div class="input-group half-line">
+                <label>Date</label>
+                <input type="text" id="date" placeholder="DD/MM/YYYY">
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <div class="preview-header">PREVIEW</div>
+            <div class="canvas-wrapper">
+                <canvas id="preview-canvas" width="840" height="1188"></canvas>
+            </div>
+        </div>
+
+        <div id="error-box" class="error-msg"></div>
+        <button id="download-btn" class="btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            DOWNLOAD PDF
+        </button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

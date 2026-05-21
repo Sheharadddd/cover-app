@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Complete Project</title>
+</head>
+<body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Lab Report Cover Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>REPORT GENERATOR</h1>
+        
+        <div class="input-grid">
+            <div class="input-group full-line">
+                <label>Experiment Title</label>
+                <textarea id="title" rows="2">IMPACT TESTING AND HARDNESS TESTING</textarea>
+            </div>
+            
+            <div class="input-group full-line">
+                <label>Name</label>
+                <input type="text" id="name" value="DISSANAYAKE U.D.O.M.">
+            </div>
+            
+            <div class="input-group half-line">
+                <label>Registration No.</label>
+                <input type="text" id="regno" value="E/22/089">
+            </div>
+            <div class="input-group half-line">
+                <label>Group</label>
+                <input type="text" id="group" value="GROUP 1">
+            </div>
+            
+            <div class="input-group half-line">
+                <label>Semester</label>
+                <input type="text" id="semester" value="SEMESTER 4">
+            </div>
+            <div class="input-group half-line">
+                <label>Date</label>
+                <input type="text" id="date" value="21/05/2026">
+            </div>
+        </div>
+
+        <div class="preview-section">
+            <div class="preview-header">LIVE CANVAS PREVIEW</div>
+            <div class="canvas-wrapper">
+                <canvas id="preview-canvas" width="840" height="1188"></canvas>
+            </div>
+        </div>
+
+        <div id="error-box" class="error-msg"></div>
+        <button id="download-btn" class="btn-primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            DOWNLOAD PDF
+        </button>
+    </div>
+
+<script>
+const charPaths = {
+    'A': [['M',0.5,0], ['L',0,1], ['M',0.5,0], ['L',1,1], ['M',0.166,0.666], ['L',0.833,0.666]],
+    'B': [['M',0,1], ['L',0,0], ['L',0.6,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.6,0.5], ['L',0,0.5], ['M',0.6,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.6,1], ['L',0,1]],
+    'C': [['M',1,0.2], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.8]],
+    'D': [['M',0,1], ['L',0,0], ['L',0.5,0], ['Q',1,0, 1,0.5], ['Q',1,1, 0.5,1], ['L',0,1]],
+    'E': [['M',0,0], ['L',0,1], ['M',0,0], ['L',1,0], ['M',0,0.5], ['L',0.666,0.5], ['M',0,1], ['L',1,1]],
+    
+    // Mathematically perfect F that extends exactly 1.0 (full width) so the 1mm spacing starts exactly off its edge
+    'F': [['M',0,0], ['L',0,1], ['M',0,0], ['L',1,0], ['M',0,0.5], ['L',0.666,0.5]],
+    
+    'G': [['M',1,0.2], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.5], ['L',0.5,0.5]],
+    'H': [['M',0,0], ['L',0,1], ['M',1,0], ['L',1,1], ['M',0,0.5], ['L',1,0.5]],
+    'I': [['M',0,0], ['L',0,1]], 
+    'J': [['M',1,0], ['L',1,0.7], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.7]],
+    
+    // Accurate K geometry matching the 1/3 height intersection & midpoint origination rule
+    'K': [['M',0,0], ['L',0,1], ['M',0,0.666], ['L',1,0], ['M',0.5,0.333], ['L',1,1]],
+    
+    'L': [['M',0,0], ['L',0,1], ['L',1,1]],
+    'M': [['M',0,1], ['L',0,0], ['L',0.5,1], ['L',1,0], ['L',1,1]],
+    'N': [['M',0,1], ['L',0,0], ['L',1,1], ['L',1,0]],
+    'O': [['M',0.5,0], ['Q',1,0, 1,0.5], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.5], ['Q',0,0, 0.5,0]],
+    'P': [['M',0,1], ['L',0,0], ['L',0.5,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.5,0.5], ['L',0,0.5]],
+    'Q': [['M',0.5,0], ['Q',1,0, 1,0.5], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.5], ['Q',0,0, 0.5,0], ['M',0.5,0.5], ['L',1,1]],
+    'R': [['M',0,1], ['L',0,0], ['L',0.5,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.5,0.5], ['L',0,0.5], ['M',0.5,0.5], ['L',1,1]],
+    'S': [['M',1,0.2], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.25], ['Q',0,0.5, 0.5,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.8]],
+    'T': [['M',0,0], ['L',1,0], ['M',0.5,0], ['L',0.5,1]],
+    'U': [['M',0,0], ['L',0,0.7], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.7], ['L',1,0]],
+    'V': [['M',0,0], ['L',0.5,1], ['L',1,0]],
+    'W': [['M',0,0], ['L',0.25,1], ['L',0.5,0], ['L',0.75,1], ['L',1,0]],
+    'X': [['M',0,0], ['L',1,1], ['M',1,0], ['L',0,1]],
+    'Y': [['M',0,0], ['L',0.5,0.5], ['L',1,0], ['M',0.5,0.5], ['L',0.5,1]],
+    'Z': [['M',0,0], ['L',1,0], ['L',0,1], ['L',1,1]],
+    '0': [['M',0.5,0], ['Q',1,0, 1,0.5], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.5], ['Q',0,0, 0.5,0]],
+    '1': [['M',0,0], ['L',0,1]],
+    '2': [['M',0,0.2], ['Q',0,0, 0.5,0], ['Q',1,0, 1,0.3], ['Q',1,0.6, 0,1], ['L',1,1]],
+    '3': [['M',0,0.2], ['Q',0,0, 0.5,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.5,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.8]],
+    '4': [['M',0.666,0], ['L',0.666,1], ['M',0,0.666], ['L',1,0.666], ['M',0.666,0], ['L',0,0.666]],
+    '5': [['M',1,0], ['L',0,0], ['L',0,0.333], ['L',0.5,0.333], ['Q',1,0.333, 1,0.666], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.8]],
+    '6': [['M',1,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.75], ['Q',1,0.5, 0.5,0.5], ['Q',0,0.5, 0,0.75]],
+    '7': [['M',0,0], ['L',1,0], ['L',0.5,1]],
+    '8': [['M',0.5,0.5], ['Q',1,0.5, 1,0.25], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.25], ['Q',0,0.5, 0.5,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.75], ['Q',0,0.5, 0.5,0.5]],
+    '9': [['M',0.5,0.5], ['Q',0,0.5, 0,0.25], ['Q',0,0, 0.5,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.5,0.5], ['M',1,0.25], ['L',1,0.5], ['Q',1,1, 0,1]],
+    '/': [['M',1,0], ['L',0,1]],
+    '-': [['M',0.2,0.5], ['L',0.8,0.5]],
+    '.': [['DOT']]
+};
+
+class Renderer {
+    constructor(type, context) {
+        this.type = type;
+        this.ctx = context;
+        this.curX = 0;
+        this.curY = 0;
+    }
+    setStyle() {
+        if (this.type === 'canvas') {
+            this.ctx.strokeStyle = '#000000';
+            this.ctx.lineWidth = 0.3;
+            this.ctx.lineCap = 'round';
+            this.ctx.lineJoin = 'round';
+        } else {
+            this.ctx.setDrawColor(0, 0, 0);
+            this.ctx.setLineWidth(0.3);
+            this.ctx.setLineCap(1); 
+            this.ctx.setLineJoin(1); 
+        }
+    }
+    beginPath() { if (this.type === 'canvas') this.ctx.beginPath(); }
+    stroke() { if (this.type === 'canvas') this.ctx.stroke(); }
+    moveTo(x, y) {
+        this.curX = x; this.curY = y;
+        if (this.type === 'canvas') this.ctx.moveTo(x, y);
+    }
+    lineTo(x, y) {
+        if (this.type === 'canvas') this.ctx.lineTo(x, y);
+        else this.ctx.line(this.curX, this.curY, x, y);
+        this.curX = x; this.curY = y;
+    }
+    quadCurveTo(cx, cy, x, y) {
+        if (this.type === 'canvas') {
+            this.ctx.quadraticCurveTo(cx, cy, x, y);
+            this.curX = x; this.curY = y;
+        } else {
+            const steps = 40; 
+            let x1 = this.curX, y1 = this.curY;
+            for (let i = 1; i <= steps; i++) {
+                let t = i / steps;
+                let u = 1 - t;
+                let xt = u*u*x1 + 2*u*t*cx + t*t*x;
+                let yt = u*u*y1 + 2*u*t*cy + t*t*y;
+                this.ctx.line(this.curX, this.curY, xt, yt);
+                this.curX = xt; this.curY = yt;
+            }
+        }
+    }
+    drawRect(x, y, w, h) {
+        if (this.type === 'canvas') this.ctx.rect(x, y, w, h);
+        else this.ctx.rect(x, y, w, h);
+    }
+    drawDot(x, y, radius) {
+        if (this.type === 'canvas') {
+            this.ctx.beginPath();
+            this.ctx.fillStyle = '#000000';
+            this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            this.ctx.fill();
+        } else {
+            this.ctx.setFillColor(0, 0, 0);
+            this.ctx.circle(x, y, radius, 'F');
+        }
+    }
+}
+
+function getCharWidth(char, defaultW) {
+    if (char === 'I' || char === '1') return 0;
+    if (char === '.' || char === '/') return 1; 
+    return defaultW;
+}
+
+function calculateWidth(text, letterW, charSp, wordSp) {
+    if (!text) return 0;
+    let width = 0;
+    for (let i = 0; i < text.length; i++) {
+        if (text[i] === ' ') width += (wordSp - charSp);
+        else width += getCharWidth(text[i], letterW) + charSp;
+    }
+    return Math.max(0, width - charSp);
+}
+
+// 9999 trick passed so text never auto wraps if not requested.
+function wrapText(text, maxW, letterW, charSp, wordSp) {
+    let explicitLines = text.split('\n');
+    let lines = [];
+    explicitLines.forEach(eLine => {
+        let words = eLine.split(' ').filter(w => w.length > 0);
+        if (words.length === 0) { lines.push(""); return; }
+        let curLine = "";
+        words.forEach(word => {
+            if (calculateWidth(word, letterW, charSp, wordSp) > maxW) {
+                if (curLine.length > 0) { lines.push(curLine); curLine = ""; }
+                let tempWord = "";
+                for (let char of word) {
+                    let testWord = tempWord.length === 0 ? char : tempWord + char;
+                    if (calculateWidth(testWord, letterW, charSp, wordSp) > maxW) {
+                        lines.push(tempWord); tempWord = char;
+                    } else tempWord = testWord;
+                }
+                curLine = tempWord;
+            } else {
+                let testLine = curLine.length === 0 ? word : curLine + " " + word;
+                if (calculateWidth(testLine, letterW, charSp, wordSp) > maxW) {
+                    lines.push(curLine); curLine = word;
+                } else curLine = testLine;
+            }
+        });
+        if (curLine.length > 0) lines.push(curLine);
+    });
+    return lines;
+}
+
+function drawText(engine, text, startX, startY, letterW, letterH, charSp, wordSp) {
+    let currentX = startX;
+    text = text.toUpperCase();
+    for (let i = 0; i < text.length; i++) {
+        let char = text[i];
+        if (char === ' ') { currentX += (wordSp - charSp); continue; }
+        
+        let cw = getCharWidth(char, letterW);
+        let path = charPaths[char];
+        if (path) {
+            if (path[0][0] === 'DOT') {
+                engine.drawDot(currentX + 0.5, startY + letterH - 0.5, 0.5);
+            } else {
+                engine.beginPath();
+                path.forEach(cmd => {
+                    let type = cmd[0];
+                    let mw = (cw === 0) ? 0 : cw;
+                    if (type === 'M') engine.moveTo(currentX + cmd[1]*mw, startY + cmd[2]*letterH);
+                    else if (type === 'L') engine.lineTo(currentX + cmd[1]*mw, startY + cmd[2]*letterH);
+                    else if (type === 'Q') engine.quadCurveTo(
+                        currentX + cmd[1]*mw, startY + cmd[2]*letterH,
+                        currentX + cmd[3]*mw, startY + cmd[4]*letterH
+                    );
+                });
+                engine.stroke();
+            }
+        }
+        currentX += cw + charSp;
+    }
+}
+
+function generateDocument(engine) {
+    const margin = 12, writableW = 186;
+    engine.setStyle();
+    engine.beginPath(); engine.drawRect(margin, margin, writableW, 297 - (2*margin)); engine.stroke();
+    
+    // --- 1. TITLE BLOCK ---
+    const rawTitle = document.getElementById('title').value;
+    const tH = 10, tW = 8, tCSp = 1, tWSp = 8, tLSp = 6;
+    let titleLines = wrapText(rawTitle, writableW, tW, tCSp, tWSp);
+    let ty = margin + ((220 - ((titleLines.length * tH) + ((titleLines.length - 1) * tLSp))) / 2);
+    
+    titleLines.forEach(line => {
+        if (line.length > 0) {
+            let lw = calculateWidth(line, tW, tCSp, tWSp);
+            let tx = margin + ((writableW - lw) / 2);
+            drawText(engine, line, tx, ty, tW, tH, tCSp, tWSp);
+            engine.beginPath(); engine.moveTo(tx, ty + tH + 1); engine.lineTo(tx + lw, ty + tH + 1); engine.stroke();
+        }
+        ty += tH + tLSp;
+    });
+    
+    // --- 2. DETAILS BLOCK ---
+    const detailsRaw = [
+        document.getElementById('name').value,
+        document.getElementById('regno').value,
+        document.getElementById('group').value,
+        document.getElementById('semester').value,
+        document.getElementById('date').value
+    ];
+    
+    let processedDetails = [];
+    detailsRaw.forEach((text, index) => {
+        let isName = index === 0;
+        let cw = isName ? 4 : 3; // Enforcing rule: 4mm for Name, 3mm for other labels
+        let ch = isName ? 5 : 4; 
+        let ws = isName ? 4 : 3; 
+        let dist = 3; // Gap is always perfectly 3mm across the details section
+        
+        // Use 9999 to guarantee text doesn't auto-wrap. It locks perfectly to a single line
+        let wrapped = wrapText(text, 9999, cw, 1, ws);
+        processedDetails.push({ lines: wrapped, cw, ch, ws, dist });
+    });
+    
+    // Anchor X exactly 10mm from the right inner border for the Name
+    let maxNameW = calculateWidth(processedDetails[0].lines[0], 4, 1, 4); 
+    let dx = (margin + writableW - 10) - maxNameW; 
+    
+    // Mathematically anchor Y from the bottom 
+    let totalHeight = 0;
+    processedDetails.forEach((item, i) => {
+        item.lines.forEach((line, j) => {
+            totalHeight += item.ch + 1; 
+            if (!(i === processedDetails.length - 1 && j === item.lines.length - 1)) totalHeight += item.dist; 
+        });
+    });
+    
+    let dy = (297 - margin - 15) - totalHeight;
+    
+    processedDetails.forEach((item, i) => {
+        item.lines.forEach((line, j) => {
+            if (line.length > 0) {
+                let lw = calculateWidth(line, item.cw, 1, item.ws);
+                drawText(engine, line, dx, dy, item.cw, item.ch, 1, item.ws);
+                engine.beginPath(); engine.moveTo(dx, dy + item.ch + 1); engine.lineTo(dx + lw, dy + item.ch + 1); engine.stroke();
+            }
+            dy += item.ch + 1;
+            if (!(i === processedDetails.length - 1 && j === item.lines.length - 1)) dy += item.dist;
+        });
+    });
+}
+
+function updateLivePreview() {
+    const canvas = document.getElementById('preview-canvas');
+    if (!canvas || !canvas.getContext) return;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0,0, canvas.width, canvas.height);
+    ctx.setTransform(1,0,0,1,0,0); ctx.scale(4,4);
+    generateDocument(new Renderer('canvas', ctx));
+}
+
+function executeDownload() {
+    const errorBox = document.getElementById('error-box');
+    errorBox.style.display = 'none';
+    try {
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            throw new Error("Library not loaded. Please refresh the page.");
+        }
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({ format: 'a4', unit: 'mm' });
+        generateDocument(new Renderer('pdf', doc));
+        const regVal = document.getElementById('regno').value.replace(/[^a-zA-Z0-9]/g, '');
+        doc.save(`Cover_${regVal || 'Doc'}.pdf`);
+    } catch (error) {
+        errorBox.textContent = error.message;
+        errorBox.style.display = 'block';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateLivePreview();
+    document.querySelectorAll('input, textarea').forEach(inp => inp.addEventListener('input', updateLivePreview));
+    document.getElementById('download-btn').addEventListener('click', executeDownload);
+});
+</script>
+</body>
+</html>
