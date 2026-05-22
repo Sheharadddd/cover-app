@@ -4,8 +4,11 @@ const charPaths = {
     'B': [['M',0,1], ['L',0,0], ['L',0.6,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.6,0.5], ['L',0,0.5], ['M',0.6,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.6,1], ['L',0,1]],
     'C': [['M',1,0.2], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.8]],
     'D': [['M',0,1], ['L',0,0], ['L',0.5,0], ['Q',1,0, 1,0.5], ['Q',1,1, 0.5,1], ['L',0,1]],
+    
+    // E & F Mathematically precise exactly as requested.
     'E': [['M',0,0], ['L',0,1], ['M',0,0], ['L',1,0], ['M',0,0.5], ['L',0.666,0.5], ['M',0,1], ['L',1,1]],
-    'F': [['M',0,0], ['L',0,1], ['M',0,0], ['L',1,0], ['M',0,0.5], ['L',0.75,0.5]],
+    'F': [['M',0,0], ['L',0,1], ['M',0,0], ['L',1,0], ['M',0,0.5], ['L',0.666,0.5]],
+    
     'G': [['M',1,0.2], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.5], ['L',0.5,0.5]],
     'H': [['M',0,0], ['L',0,1], ['M',1,0], ['L',1,1], ['M',0,0.5], ['L',1,0.5]],
     'I': [['M',0,0], ['L',0,1]],
@@ -32,10 +35,13 @@ const charPaths = {
     '3': [['M',0,0.2], ['Q',0,0, 0.5,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.5,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.8]],
     '4': [['M',0.666,0], ['L',0.666,1], ['M',0,0.666], ['L',1,0.666], ['M',0.666,0], ['L',0,0.666]],
     '5': [['M',1,0], ['L',0,0], ['L',0,0.333], ['L',0.5,0.333], ['Q',1,0.333, 1,0.666], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.8]],
-    '6': [['M',1,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.75], ['Q',1,0.5, 0.5,0.5], ['Q',0,0.5, 0,0.75]],
+    
+    // Perfectly arching loops closing smoothly exactly at Y=0.5
+    '6': [['M',0.8,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.75], ['Q',1,0.45, 0.5,0.45], ['Q',0,0.45, 0,0.5]],
     '7': [['M',0,0], ['L',1,0], ['L',0.5,1]],
     '8': [['M',0.5,0.5], ['Q',1,0.5, 1,0.25], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.25], ['Q',0,0.5, 0.5,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.75], ['Q',0,0.5, 0.5,0.5]],
-    '9': [['M',0.5,0.5], ['Q',0,0.5, 0,0.25], ['Q',0,0, 0.5,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.5,0.5], ['M',1,0.25], ['L',1,0.5], ['Q',1,1, 0,1]],
+    '9': [['M',0.2,1], ['Q',1,1, 1,0.5], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.25], ['Q',0,0.55, 0.5,0.55], ['Q',1,0.55, 1,0.5]],
+    
     '/': [['M',1,0], ['L',0,1]],
     '-': [['M',0.2,0.5], ['L',0.8,0.5]],
     '.': [['DOT']]
@@ -151,9 +157,7 @@ function calculateWidth(text, letterW, charSp, wordSp) {
             width += (wordSp - charSp); 
         } else { 
             width += getCharWidth(currentChar, letterW); 
-            if (i < text.length - 1) { 
-                width += getCharacterSpacing(currentChar, nextChar, charSp); 
-            } 
+            if (i < text.length - 1) { width += getCharacterSpacing(currentChar, nextChar, charSp); } 
         } 
     }
     return Math.max(0, width);
@@ -204,6 +208,7 @@ function drawText(engine, text, startX, startY, letterW, letterH, charSp, wordSp
         const nextChar = text[i + 1];
 
         if (char === ' ') { currentX += (wordSp - charSp); continue; } 
+        
         const cw = getCharWidth(char, letterW); 
         const path = charPaths[char]; 
         
@@ -245,7 +250,7 @@ function generateDocument(engine) {
     const rawTitle = document.getElementById('title').value.trim() || 'EXPERIMENT NAME';
     const nameStr = document.getElementById('name').value.trim() || 'STUDENT NAME';
     const regStr = document.getElementById('regno').value.trim() || 'E NUMBER';
-    const groupStr = document.getElementById('group').value.trim() || 'GROUP';
+    const groupStr = document.getElementById('group').value.trim() || 'GROUP NO';
     const semStr = document.getElementById('semester').value.trim() || 'SEMESTER';
     const dateStr = document.getElementById('date').value.trim() || 'DD/MM/YYYY';
 
@@ -265,10 +270,7 @@ function generateDocument(engine) {
             const lw = calculateWidth(cleanLine, tW, tCSp, tWSp); 
             const tx = margin + ((writableW - lw) / 2); 
             drawText(engine, cleanLine, tx, ty, tW, tH, tCSp, tWSp); 
-            engine.beginPath(); 
-            engine.moveTo(tx, ty + tH + 1); 
-            engine.lineTo(tx + lw, ty + tH + 1); 
-            engine.stroke(); 
+            engine.beginPath(); engine.moveTo(tx, ty + tH + 1); engine.lineTo(tx + lw, ty + tH + 1); engine.stroke(); 
         } 
         ty += tH + tLSp; 
     });
@@ -278,12 +280,8 @@ function generateDocument(engine) {
 
     detailsRaw.forEach((text, index) => {
         const isName = index === 0;
-        const cw = isName ? 4 : 3; 
-        const ch = isName ? 5 : 4; 
-        const ws = isName ? 4 : 3; 
-        const dist = 3; 
-        const cleanText = text.trim(); 
-        const wrapped = wrapText(cleanText, 9999, cw, 1, ws); 
+        const cw = isName ? 4 : 3; const ch = isName ? 5 : 4; const ws = isName ? 4 : 3; const dist = 3; 
+        const cleanText = text.trim(); const wrapped = wrapText(cleanText, 9999, cw, 1, ws); 
         processedDetails.push({ lines: wrapped, cw, ch, ws, dist }); 
     });
 
@@ -291,13 +289,10 @@ function generateDocument(engine) {
     const dx = (margin + writableW - 10) - maxNameW;
 
     let totalHeight = 0;
-
     processedDetails.forEach((item, i) => {
         item.lines.forEach((line, j) => {
             totalHeight += item.ch + 1;
-            if (!(i === processedDetails.length - 1 && j === item.lines.length - 1)) { 
-                totalHeight += item.dist; 
-            } 
+            if (!(i === processedDetails.length - 1 && j === item.lines.length - 1)) { totalHeight += item.dist; } 
         }); 
     });
 
@@ -309,15 +304,10 @@ function generateDocument(engine) {
             if (cleanLine.length > 0) { 
                 const lw = calculateWidth(cleanLine, item.cw, 1, item.ws); 
                 drawText(engine, cleanLine, dx, dy, item.cw, item.ch, 1, item.ws); 
-                engine.beginPath(); 
-                engine.moveTo(dx, dy + item.ch + 1); 
-                engine.lineTo(dx + lw, dy + item.ch + 1); 
-                engine.stroke(); 
+                engine.beginPath(); engine.moveTo(dx, dy + item.ch + 1); engine.lineTo(dx + lw, dy + item.ch + 1); engine.stroke(); 
             } 
             dy += item.ch + 1; 
-            if (!(i === processedDetails.length - 1 && j === item.lines.length - 1)) { 
-                dy += item.dist; 
-            } 
+            if (!(i === processedDetails.length - 1 && j === item.lines.length - 1)) { dy += item.dist; } 
         }); 
     });
 }
@@ -343,8 +333,7 @@ function executeDownload() {
         if (!window.jspdf || !window.jspdf.jsPDF) {
             throw new Error("Library not loaded. Please refresh the page.");
         }
-        const { jsPDF } = window.jspdf; 
-        const doc = new jsPDF({ format: 'a4', unit: 'mm' }); 
+        const { jsPDF } = window.jspdf; const doc = new jsPDF({ format: 'a4', unit: 'mm' }); 
         generateDocument(new Renderer('pdf', doc)); 
         const regVal = document.getElementById('regno').value.replace(/[^a-zA-Z0-9]/g, ''); 
         doc.save(`Cover_${regVal || 'Doc'}.pdf`); 
@@ -428,15 +417,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadBtn = document.getElementById('download-btn');
     if (downloadBtn && !document.getElementById('credit-line')) {
         const credit = document.createElement('div');
-        credit.id = 'credit-line'; credit.innerText = '~444~ 2026©'; credit.style.textAlign = 'center'; credit.style.color = 'var(--text-label)'; credit.style.fontSize = '10px'; credit.style.opacity = '0.6'; credit.style.marginTop = '15px'; credit.style.marginBottom = '10px'; credit.style.letterSpacing = '1px'; 
+        credit.id = 'credit-line'; credit.innerText = '~444~ 2026©'; credit.style.textAlign = 'center'; credit.style.color = 'var(--text-label)'; credit.style.fontSize = '10px'; credit.style.opacity = '0.4'; credit.style.marginTop = '15px'; credit.style.marginBottom = '10px'; credit.style.letterSpacing = '1px'; 
         downloadBtn.insertAdjacentElement('afterend', credit); 
     }
 
     updateLivePreview();
-
     document.querySelectorAll('input, textarea').forEach(inp => {
         inp.addEventListener('input', updateLivePreview);
     });
-
     document.getElementById('download-btn').addEventListener('click', executeDownload);
 });

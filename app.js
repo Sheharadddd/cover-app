@@ -1,14 +1,17 @@
-// Advanced Vector Geometry Engine
+// Advanced Vector Geometry
 const charPaths = {
     'A': [['M',0.5,0], ['L',0,1], ['M',0.5,0], ['L',1,1], ['M',0.166,0.666], ['L',0.833,0.666]],
     'B': [['M',0,1], ['L',0,0], ['L',0.6,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.6,0.5], ['L',0,0.5], ['M',0.6,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.6,1], ['L',0,1]],
     'C': [['M',1,0.2], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.8]],
     'D': [['M',0,1], ['L',0,0], ['L',0.5,0], ['Q',1,0, 1,0.5], ['Q',1,1, 0.5,1], ['L',0,1]],
+    
+    // E & F Mathematically precise exactly as requested.
     'E': [['M',0,0], ['L',0,1], ['M',0,0], ['L',1,0], ['M',0,0.5], ['L',0.666,0.5], ['M',0,1], ['L',1,1]],
-    'F': [['M',0,0], ['L',0,1], ['M',0,0], ['L',1,0], ['M',0,0.5], ['L',0.75,0.5]],
+    'F': [['M',0,0], ['L',0,1], ['M',0,0], ['L',1,0], ['M',0,0.5], ['L',0.666,0.5]],
+    
     'G': [['M',1,0.2], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.5], ['L',0.5,0.5]],
     'H': [['M',0,0], ['L',0,1], ['M',1,0], ['L',1,1], ['M',0,0.5], ['L',1,0.5]],
-    'I': [['M',0,0], ['L',0,1]], 
+    'I': [['M',0,0], ['L',0,1]],
     'J': [['M',1,0], ['L',1,0.7], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.7]],
     'K': [['M',0,0], ['L',0,1], ['M',0,0.666], ['L',1,0], ['M',0.333,0.444], ['L',1,1]],
     'L': [['M',0,0], ['L',0,1], ['L',1,1]],
@@ -32,10 +35,13 @@ const charPaths = {
     '3': [['M',0,0.2], ['Q',0,0, 0.5,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.5,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.8]],
     '4': [['M',0.666,0], ['L',0.666,1], ['M',0,0.666], ['L',1,0.666], ['M',0.666,0], ['L',0,0.666]],
     '5': [['M',1,0], ['L',0,0], ['L',0,0.333], ['L',0.5,0.333], ['Q',1,0.333, 1,0.666], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.8]],
-    '6': [['M',1,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.75], ['Q',1,0.5, 0.5,0.5], ['Q',0,0.5, 0,0.75]],
+    
+    // Perfectly arching loops closing smoothly exactly at Y=0.5
+    '6': [['M',0.8,0], ['Q',0,0, 0,0.5], ['Q',0,1, 0.5,1], ['Q',1,1, 1,0.75], ['Q',1,0.45, 0.5,0.45], ['Q',0,0.45, 0,0.5]],
     '7': [['M',0,0], ['L',1,0], ['L',0.5,1]],
     '8': [['M',0.5,0.5], ['Q',1,0.5, 1,0.25], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.25], ['Q',0,0.5, 0.5,0.5], ['Q',1,0.5, 1,0.75], ['Q',1,1, 0.5,1], ['Q',0,1, 0,0.75], ['Q',0,0.5, 0.5,0.5]],
-    '9': [['M',0.5,0.5], ['Q',0,0.5, 0,0.25], ['Q',0,0, 0.5,0], ['Q',1,0, 1,0.25], ['Q',1,0.5, 0.5,0.5], ['M',1,0.25], ['L',1,0.5], ['Q',1,1, 0,1]],
+    '9': [['M',0.2,1], ['Q',1,1, 1,0.5], ['Q',1,0, 0.5,0], ['Q',0,0, 0,0.25], ['Q',0,0.55, 0.5,0.55], ['Q',1,0.55, 1,0.5]],
+    
     '/': [['M',1,0], ['L',0,1]],
     '-': [['M',0.2,0.5], ['L',0.8,0.5]],
     '.': [['DOT']]
@@ -63,27 +69,38 @@ class Renderer {
         }
     }
 
-    beginPath() { if (this.type === 'canvas') this.ctx.beginPath(); }
-    stroke() { if (this.type === 'canvas') this.ctx.stroke(); }
-    
+    beginPath() {
+        if (this.type === 'canvas') this.ctx.beginPath();
+    }
+
+    stroke() {
+        if (this.type === 'canvas') this.ctx.stroke();
+    }
+
     moveTo(x, y) {
-        this.curX = x; this.curY = y;
+        this.curX = x;
+        this.curY = y;
         if (this.type === 'canvas') this.ctx.moveTo(x, y); 
     }
 
     lineTo(x, y) {
-        if (this.type === 'canvas') { this.ctx.lineTo(x, y); } 
-        else { this.ctx.line(this.curX, this.curY, x, y); }
+        if (this.type === 'canvas') {
+            this.ctx.lineTo(x, y);
+        } else {
+            this.ctx.line(this.curX, this.curY, x, y);
+        }
         this.curX = x; this.curY = y; 
     }
 
     quadCurveTo(cx, cy, x, y) {
         if (this.type === 'canvas') {
             this.ctx.quadraticCurveTo(cx, cy, x, y);
-            this.curX = x; this.curY = y;
+            this.curX = x;
+            this.curY = y;
         } else {
             const steps = 40;
-            const x1 = this.curX; const y1 = this.curY;
+            const x1 = this.curX;
+            const y1 = this.curY;
             let prevX = x1; let prevY = y1; 
             for (let i = 1; i <= steps; i++) { 
                 const t = i / steps; const u = 1 - t; 
@@ -97,8 +114,11 @@ class Renderer {
     }
 
     drawRect(x, y, w, h) {
-        if (this.type === 'canvas') { this.ctx.rect(x, y, w, h); } 
-        else { this.ctx.rect(x, y, w, h, 'S'); }
+        if (this.type === 'canvas') {
+            this.ctx.rect(x, y, w, h);
+        } else {
+            this.ctx.rect(x, y, w, h, 'S');
+        }
     }
 
     drawDot(x, y, radius) {
@@ -120,6 +140,10 @@ function getCharWidth(char, defaultW) {
     return defaultW;
 }
 
+function getCharacterSpacing(currentChar, nextChar, defaultSpacing) {
+    return defaultSpacing;
+}
+
 function calculateWidth(text, letterW, charSp, wordSp) {
     if (!text) return 0;
     text = text.toUpperCase();
@@ -127,11 +151,13 @@ function calculateWidth(text, letterW, charSp, wordSp) {
 
     for (let i = 0; i < text.length; i++) {
         const currentChar = text[i];
+        const nextChar = text[i + 1];
+
         if (currentChar === ' ') { 
             width += (wordSp - charSp); 
         } else { 
             width += getCharWidth(currentChar, letterW); 
-            if (i < text.length - 1) { width += charSp; } 
+            if (i < text.length - 1) { width += getCharacterSpacing(currentChar, nextChar, charSp); } 
         } 
     }
     return Math.max(0, width);
@@ -153,14 +179,18 @@ function wrapText(text, maxW, letterW, charSp, wordSp) {
                     const testWord = tempWord.length === 0 ? char : tempWord + char; 
                     if (calculateWidth(testWord, letterW, charSp, wordSp) > maxW) { 
                         lines.push(tempWord); tempWord = char; 
-                    } else { tempWord = testWord; } 
+                    } else { 
+                        tempWord = testWord; 
+                    } 
                 } 
                 curLine = tempWord; 
             } else { 
                 const testLine = curLine.length === 0 ? word : curLine + " " + word; 
                 if (calculateWidth(testLine, letterW, charSp, wordSp) > maxW) { 
                     lines.push(curLine); curLine = word; 
-                } else { curLine = testLine; } 
+                } else { 
+                    curLine = testLine; 
+                } 
             } 
         }); 
         if (curLine.length > 0) lines.push(curLine); 
@@ -175,6 +205,8 @@ function drawText(engine, text, startX, startY, letterW, letterH, charSp, wordSp
 
     for (let i = 0; i < text.length; i++) {
         const char = text[i];
+        const nextChar = text[i + 1];
+
         if (char === ' ') { currentX += (wordSp - charSp); continue; } 
         
         const cw = getCharWidth(char, letterW); 
@@ -188,15 +220,21 @@ function drawText(engine, text, startX, startY, letterW, letterH, charSp, wordSp
                 path.forEach(cmd => { 
                     const type = cmd[0]; 
                     const mw = (char === 'I' || char === '1') ? 0 : (char === '.' || char === '/') ? 1 : letterW; 
-                    if (type === 'M') { engine.moveTo(currentX + cmd[1] * mw, startY + cmd[2] * letterH); } 
-                    else if (type === 'L') { engine.lineTo(currentX + cmd[1] * mw, startY + cmd[2] * letterH); } 
-                    else if (type === 'Q') { engine.quadCurveTo( currentX + cmd[1] * mw, startY + cmd[2] * letterH, currentX + cmd[3] * mw, startY + cmd[4] * letterH ); } 
+                    if (type === 'M') { 
+                        engine.moveTo(currentX + cmd[1] * mw, startY + cmd[2] * letterH); 
+                    } else if (type === 'L') { 
+                        engine.lineTo(currentX + cmd[1] * mw, startY + cmd[2] * letterH); 
+                    } else if (type === 'Q') { 
+                        engine.quadCurveTo( currentX + cmd[1] * mw, startY + cmd[2] * letterH, currentX + cmd[3] * mw, startY + cmd[4] * letterH ); 
+                    } 
                 }); 
                 engine.stroke(); 
             } 
         } 
         currentX += cw; 
-        if (i < text.length - 1) { currentX += charSp; } 
+        if (i < text.length - 1) { 
+            currentX += getCharacterSpacing(char, nextChar, charSp); 
+        } 
     }
 }
 
@@ -216,7 +254,12 @@ function generateDocument(engine) {
     const semStr = document.getElementById('semester').value.trim() || 'SEMESTER';
     const dateStr = document.getElementById('date').value.trim() || 'DD/MM/YYYY';
 
-    const tH = 10, tW = 8, tCSp = 1, tWSp = 8, tLSp = 6;
+    const tH = 10;
+    const tW = 8;
+    const tCSp = 1;
+    const tWSp = 8;
+    const tLSp = 6;
+
     const titleLines = wrapText(rawTitle, writableW, tW, tCSp, tWSp);
 
     let ty = margin + ((220 - ((titleLines.length * tH) + ((titleLines.length - 1) * tLSp))) / 2);
@@ -242,12 +285,18 @@ function generateDocument(engine) {
         processedDetails.push({ lines: wrapped, cw, ch, ws, dist }); 
     });
 
-    // Hard anchor to 10mm from the right margin
     const maxNameW = calculateWidth(processedDetails[0].lines[0], 4, 1, 4);
     const dx = (margin + writableW - 10) - maxNameW;
 
-    // Mathematically anchor 15mm from bottom inner margin over 38mm total height
-    let dy = (297 - margin - 15) - 38;
+    let totalHeight = 0;
+    processedDetails.forEach((item, i) => {
+        item.lines.forEach((line, j) => {
+            totalHeight += item.ch + 1;
+            if (!(i === processedDetails.length - 1 && j === item.lines.length - 1)) { totalHeight += item.dist; } 
+        }); 
+    });
+
+    let dy = (297 - margin - 15) - totalHeight;
 
     processedDetails.forEach((item, i) => {
         item.lines.forEach((line, j) => {
@@ -281,7 +330,9 @@ function executeDownload() {
     errorBox.style.display = 'none';
 
     try {
-        if (!window.jspdf || !window.jspdf.jsPDF) { throw new Error("Library not loaded. Please refresh the page."); }
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            throw new Error("Library not loaded. Please refresh the page.");
+        }
         const { jsPDF } = window.jspdf; const doc = new jsPDF({ format: 'a4', unit: 'mm' }); 
         generateDocument(new Renderer('pdf', doc)); 
         const regVal = document.getElementById('regno').value.replace(/[^a-zA-Z0-9]/g, ''); 
@@ -301,6 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dateInput) {
         dateInput.setAttribute('inputmode', 'numeric');
         dateInput.setAttribute('pattern', '[0-9]*');
+        dateInput.setAttribute('placeholder', 'DD/MM/YYYY');
     }
 
     function setupPrefixField(input, prefix) {
@@ -312,7 +364,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }); 
         input.addEventListener('keydown', e => { 
             const minLength = prefix.length; 
-            if ((e.key === 'Backspace' || e.key === 'Delete') && input.selectionStart <= minLength) { e.preventDefault(); } 
+            if ( (e.key === 'Backspace' || e.key === 'Delete') && input.selectionStart <= minLength ) { e.preventDefault(); } 
         }); 
         input.addEventListener('click', () => { 
             const minLength = prefix.length; 
@@ -357,17 +409,21 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     dateInput.addEventListener('keydown', e => {
-        if (!/[0-9]|Backspace|Delete|ArrowLeft|ArrowRight|Tab/.test(e.key)) { e.preventDefault(); }
+        if (!/[0-9]|Backspace|Delete|ArrowLeft|ArrowRight|Tab/.test(e.key)) {
+            e.preventDefault();
+        }
     });
 
     const downloadBtn = document.getElementById('download-btn');
     if (downloadBtn && !document.getElementById('credit-line')) {
         const credit = document.createElement('div');
-        credit.id = 'credit-line'; credit.innerText = '~444~ 2026©'; credit.style.textAlign = 'center'; credit.style.fontSize = '9px'; credit.style.opacity = '0.6'; credit.style.marginTop = '10px'; credit.style.marginBottom = '10px'; credit.style.letterSpacing = '1px'; 
+        credit.id = 'credit-line'; credit.innerText = '~444~ 2026©'; credit.style.textAlign = 'center'; credit.style.color = 'var(--text-label)'; credit.style.fontSize = '10px'; credit.style.opacity = '0.4'; credit.style.marginTop = '15px'; credit.style.marginBottom = '10px'; credit.style.letterSpacing = '1px'; 
         downloadBtn.insertAdjacentElement('afterend', credit); 
     }
 
     updateLivePreview();
-    document.querySelectorAll('input, textarea').forEach(inp => { inp.addEventListener('input', updateLivePreview); });
+    document.querySelectorAll('input, textarea').forEach(inp => {
+        inp.addEventListener('input', updateLivePreview);
+    });
     document.getElementById('download-btn').addEventListener('click', executeDownload);
 });
